@@ -34,6 +34,10 @@
                             <a class="nav-link" href="#reservations" style="color: white; font-weight: 500;">Mis
                                 Reservas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}"
+                                style="color: white; font-weight: 500;">Admin</a>
+                        </li>
                     </ul>
                 </div>
             </div>

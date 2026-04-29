@@ -150,6 +150,12 @@
                             <i class="bi bi-people"></i> Huéspedes
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.operaciones') }}"
+                            class="nav-link nav-link-custom d-flex align-items-center gap-3 py-2 px-3">
+                            <i class="bi bi-briefcase"></i> Operaciones
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="mt-4 pt-4 border-top">
@@ -167,8 +173,14 @@
                     </div>
                     <div>
                         <p class="small fw-medium mb-0">Usuario Admin</p>
-                        <p class="text-muted mb-0" style="font-size: 0.75rem;">manager@hotel.com</p>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">admin1@hotelpacificreef.com</p>
                     </div>
+                </div>
+                <div class="mt-2 text-center">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Cerrar Sesión</button>
+                    </form>
                 </div>
             </div>
         </aside>
@@ -294,7 +306,8 @@
                                             @for ($i = 1; $i <= 30; $i++)
                                                 <div
                                                     class="calendar-cell py-2 small {{ $i == 16 ? 'bg-slate-900 text-white' : 'text-muted' }}">
-                                                    {{ $i }}</div>
+                                                    {{ $i }}
+                                                </div>
                                             @endfor
                                         </div>
                                     </div>
@@ -312,13 +325,16 @@
                                         <div class="position-absolute"
                                             style="left: 120px; top: 0; bottom: 0; right: 0; pointer-events: none;">
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (2 - 1) * 48 }}px; width: {{ 3 * 48 }}px; top: 8px;">John
+                                                style="left: {{ (2 - 1) * 48 }}px; width: {{ 3 * 48 }}px; top: 8px;">
+                                                John
                                                 Smith</div>
                                             <div class="booking-bar status-checked-in pointer-events-auto"
-                                                style="left: {{ (8 - 1) * 48 }}px; width: {{ 5 * 48 }}px; top: 36px;">Emma
+                                                style="left: {{ (8 - 1) * 48 }}px; width: {{ 5 * 48 }}px; top: 36px;">
+                                                Emma
                                                 Wilson</div>
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (18 - 1) * 48 }}px; width: {{ 4 * 48 }}px; top: 8px;">Mike
+                                                style="left: {{ (18 - 1) * 48 }}px; width: {{ 4 * 48 }}px; top: 8px;">
+                                                Mike
                                                 Brown</div>
                                         </div>
                                     </div>
@@ -336,13 +352,16 @@
                                         <div class="position-absolute"
                                             style="left: 120px; top: 0; bottom: 0; right: 0; pointer-events: none;">
                                             <div class="booking-bar status-checked-in pointer-events-auto"
-                                                style="left: {{ (1 - 1) * 48 }}px; width: {{ 4 * 48 }}px; top: 8px;">David Lee
+                                                style="left: {{ (1 - 1) * 48 }}px; width: {{ 4 * 48 }}px; top: 8px;">
+                                                David Lee
                                             </div>
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (10 - 1) * 48 }}px; width: {{ 8 * 48 }}px; top: 36px;">Anna
+                                                style="left: {{ (10 - 1) * 48 }}px; width: {{ 8 * 48 }}px; top: 36px;">
+                                                Anna
                                                 Martinez</div>
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (22 - 1) * 48 }}px; width: {{ 5 * 48 }}px; top: 8px;">Chris
+                                                style="left: {{ (22 - 1) * 48 }}px; width: {{ 5 * 48 }}px; top: 8px;">
+                                                Chris
                                                 Taylor</div>
                                         </div>
                                     </div>
@@ -360,10 +379,12 @@
                                         <div class="position-absolute"
                                             style="left: 120px; top: 0; bottom: 0; right: 0; pointer-events: none;">
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (7 - 1) * 48 }}px; width: {{ 10 * 48 }}px; top: 8px;">Robert
+                                                style="left: {{ (7 - 1) * 48 }}px; width: {{ 10 * 48 }}px; top: 8px;">
+                                                Robert
                                                 Chen</div>
                                             <div class="booking-bar status-confirmed pointer-events-auto"
-                                                style="left: {{ (20 - 1) * 48 }}px; width: {{ 8 * 48 }}px; top: 36px;">Diana
+                                                style="left: {{ (20 - 1) * 48 }}px; width: {{ 8 * 48 }}px; top: 36px;">
+                                                Diana
                                                 Prince</div>
                                         </div>
                                     </div>
