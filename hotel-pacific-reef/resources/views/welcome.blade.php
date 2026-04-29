@@ -81,10 +81,10 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-lg w-100"
+                                <a href="/reservar/pasos" class="btn btn-lg w-100"
                                     style="background-color: #0891b2; color: white; border: none; font-weight: 500;">
                                     🔍 Buscar
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -128,8 +128,8 @@
                                     <span style="color: #0891b2; font-size: 1.5rem; font-weight: 600;">$120</span>
                                     <span class="text-muted"> / noche</span>
                                 </div>
-                                <button class="btn"
-                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</button>
+                                <a href="/reservar/pasos" class="btn"
+                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</a>
                             </div>
                         </div>
                     </div>
@@ -163,8 +163,8 @@
                                     <span style="color: #0891b2; font-size: 1.5rem; font-weight: 600;">$180</span>
                                     <span class="text-muted"> / noche</span>
                                 </div>
-                                <button class="btn"
-                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</button>
+                                <a href="/reservar/pasos" class="btn"
+                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</a>
                             </div>
                         </div>
                     </div>
@@ -200,8 +200,8 @@
                                     <span style="color: #0891b2; font-size: 1.5rem; font-weight: 600;">$350</span>
                                     <span class="text-muted"> / noche</span>
                                 </div>
-                                <button class="btn"
-                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</button>
+                                <a href="/reservar/pasos" class="btn"
+                                    style="background-color: #0891b2; color: white; border: none; font-weight: 500;">Reservar</a>
                             </div>
                         </div>
                     </div>
