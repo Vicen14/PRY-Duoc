@@ -38,3 +38,11 @@ Route::get('/admin/operaciones', function () {
 Route::get('/reservar/pasos', function () {
     return view('reserva.flujo');
 });
+
+// Habitaciones disponibles
+use App\Http\Controllers\AvailableRoomsController;
+Route::get('/habitaciones', [AvailableRoomsController::class, 'index'])->name('rooms.available');
+
+// --- HISTORIAL DE RESERVAS (USUARIO) ---
+use App\Http\Controllers\HistorialController;
+Route::middleware('auth')->get('/historial', [HistorialController::class, 'index'])->name('historial');

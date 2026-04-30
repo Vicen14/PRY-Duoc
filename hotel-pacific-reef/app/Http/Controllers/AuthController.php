@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -24,6 +25,17 @@ class AuthController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+            if ($user->role === 'client') {
+                return redirect('/');
+            }
+
+            return redirect('/');
+        }
+
         return back()->withErrors([
             'email' => 'Las credenciales proporcionadas no son correctas.',
         ]);
@@ -31,7 +43,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        Auth::logout();
         session()->forget('is_admin');
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect('/');
     }
 
@@ -49,16 +66,16 @@ class AuthController extends Controller
             'password' => 'required|confirmed|min:6',
         ]);
 
-        // \App\Models\User::create([
-        //     'name' => $request->name,
-        //     'rut' => $request->rut,
-        //     'email' => $request->email,
-        //     'password' => bcrypt($request->password),
-        // ]);
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'rut' => $request->rut,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'role' => 'client',
+        ]);
 
-        // Por ahora simulamos el registro ingresando el usuario en sesión y redirigiendo al home.
-        // session(['is_logged_in' => true]);
+        Auth::login($user);
 
-        return redirect()->route('login')->withSuccess('Cuenta creada. Por favor, inicia sesión.');
+        return redirect('/');
     }
 }
