@@ -34,4 +34,31 @@ class AuthController extends Controller
         session()->forget('is_admin');
         return redirect('/');
     }
+
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'rut' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:6',
+        ]);
+
+        // \App\Models\User::create([
+        //     'name' => $request->name,
+        //     'rut' => $request->rut,
+        //     'email' => $request->email,
+        //     'password' => bcrypt($request->password),
+        // ]);
+
+        // Por ahora simulamos el registro ingresando el usuario en sesión y redirigiendo al home.
+        // session(['is_logged_in' => true]);
+
+        return redirect()->route('login')->withSuccess('Cuenta creada. Por favor, inicia sesión.');
+    }
 }

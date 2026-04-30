@@ -36,7 +36,11 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}"
-                                style="color: white; font-weight: 500;">Admin</a>
+                                style="color: white; font-weight: 500;">Iniciar sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('register') }}"
+                                style="color: white; font-weight: 500;">Registrarse</a>
                         </li>
                     </ul>
                 </div>
