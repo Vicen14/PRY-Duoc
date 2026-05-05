@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvailableRoomsController;
+use App\Http\Controllers\RoomController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,8 +42,10 @@ Route::get('/reservar/pasos', function () {
 });
 
 // Habitaciones disponibles
-use App\Http\Controllers\AvailableRoomsController;
 Route::get('/habitaciones', [AvailableRoomsController::class, 'index'])->name('rooms.available');
+
+// Ruta para buscar habitaciones disponibles
+Route::get('/rooms/search', [RoomController::class, 'search'])->name('rooms.search');
 
 // --- HISTORIAL DE RESERVAS (USUARIO) ---
 use App\Http\Controllers\HistorialController;

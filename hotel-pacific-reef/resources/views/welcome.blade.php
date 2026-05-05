@@ -197,6 +197,38 @@
         </div>
     </div>
 
+    <form action="{{ route('rooms.search') }}" method="GET" class="card shadow-lg"
+        style="max-width: 900px; width: 100%; border-radius: 12px; border: none;">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3 text-start">
+                    <label class="form-label" style="color: #0891b2; font-weight: 500;">📅 Entrada</label>
+                    <input type="date" name="checkin" id="checkin-date" class="form-control form-control-lg"
+                        style="border-color: #0891b2;" required>
+                </div>
+                <div class="col-md-3 text-start">
+                    <label class="form-label" style="color: #0891b2; font-weight: 500;">📅 Salida</label>
+                    <input type="date" name="checkout" id="checkout-date" class="form-control form-control-lg"
+                        style="border-color: #0891b2;" required>
+                </div>
+                <div class="col-md-3 text-start">
+                    <label class="form-label" style="color: #0891b2; font-weight: 500;">👥 Huéspedes</label>
+                    <select name="guests" class="form-select form-select-lg" style="border-color: #0891b2;" required>
+                        <option value="1">1 Huésped</option>
+                        <option value="2" selected>2 Huéspedes</option>
+                        <option value="3">3 Huéspedes</option>
+                        <option value="4">4 Huéspedes</option>
+                        <option value="5">5+ Huéspedes</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-lg w-100" style="background-color: #0891b2; color: white;">Buscar
+                        Habitaciones</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const checkinInput = document.getElementById('checkin-date');

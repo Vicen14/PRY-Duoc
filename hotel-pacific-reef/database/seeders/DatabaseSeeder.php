@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\RoomSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,5 +24,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'vicente@gmail.com',
             'password' => bcrypt('Vicente'),
         ]);
+
+        $this->call(RoomSeeder::class);
     }
 }

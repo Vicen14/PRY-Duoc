@@ -15,9 +15,13 @@ return new class extends Migration {
             $table->integer('room_number')->unique();
             $table->enum('room_type', ['Turista', 'Premium']);
             $table->string('location');
+            $table->string('name');
+            $table->text('description');
             $table->text('characteristics');
             $table->text('equipment');
             $table->decimal('price_per_night', 8, 2);
+            $table->decimal('price', 8, 2);
+            $table->integer('capacity');
             $table->enum('status', ['disponible', 'ocupada', 'mantenimiento'])->default('disponible');
             $table->timestamps();
         });

@@ -339,7 +339,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-medium">Nombre del Titular *</label>
-                                    <input type="text" class="form-control" required minlength="3"
+                                    <input type="text" class="form-control" id="guest-name" required minlength="3"
                                         placeholder="JUAN PEREZ">
                                 </div>
                                 <div class="row g-3 mb-4">
@@ -374,17 +374,17 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-medium">Titular de la Cuenta *</label>
-                                    <input type="text" class="form-control" required minlength="3"
+                                    <input type="text" class="form-control" id="bank-account" required minlength="3"
                                         placeholder="Juan Pérez">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-medium">Número de Cuenta / IBAN *</label>
-                                    <input type="text" class="form-control" required minlength="10"
+                                    <input type="text" class="form-control" id="bank-iban" required minlength="10"
                                         placeholder="ES12 1234 5678 9012 3456 7890">
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label small fw-medium">Nombre del Banco *</label>
-                                    <input type="text" class="form-control" required minlength="3"
+                                    <input type="text" class="form-control" id="bank-name" required minlength="3"
                                         placeholder="Banco Santander">
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -485,9 +485,9 @@
                         <div class="room-card bg-card h-100 d-flex flex-column">
                             <div class="position-relative" style="height: 200px;">
                                 <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
-                                <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
-                                    ${room.available} disponibles
-                                </div>
+                                    <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                        ${room.available} disponibles
+                                    </div>
                             </div>
                             <div class="p-4 d-flex flex-column flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -502,4 +502,3711 @@
                                 </div>
                                 <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
                                 <div class="mt-auto">
-                                    <div class
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                        <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `< span class="amenity-badge" > ${ a }</span > `).join('');
+                const extraAmenities = room.amenities.length > 3 ? `< span class="small text-muted-foreground ms-1" > +${ room.amenities.length - 3 } más</span > ` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                    < div class="col-md-6 col-lg-6" >
+                        <div class="room-card bg-card h-100 d-flex flex-column">
+                            <div class="position-relative" style="height: 200px;">
+                                <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                    <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                        ${room.available} disponibles
+                                    </div>
+                            </div>
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                        <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                        <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                        <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div >
+                    </div >
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
+                        {id: 1, name: 'Suite Ejecutiva', type: 'Suite', price: 150, available: 3, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Vista al mar'], maxGuests: 2 },
+                        {id: 2, name: 'Habitación Doble Estándar', type: 'Estándar', price: 89, available: 5, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Aire acondicionado'], maxGuests: 2 },
+                        {id: 3, name: 'Suite Presidencial', type: 'Suite Premium', price: 350, available: 1, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Minibar', 'Jacuzzi', 'Balcón'], maxGuests: 4 },
+                        {id: 4, name: 'Habitación Individual', type: 'Individual', price: 65, available: 8, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV'], maxGuests: 1 },
+                        {id: 5, name: 'Suite Familiar', type: 'Familiar', price: 200, available: 2, image: 'https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=400&h=250&fit=crop', amenities: ['WiFi', 'TV', 'Cocina', 'Sala'], maxGuests: 6 }
+                        ];
+
+                        let bookingData = {
+                            room: null,
+                        guests: 1,
+                        checkIn: '',
+                        checkOut: '',
+                        guestDetails: null,
+                        nights: 0,
+                        total: 0
+        };
+
+                        // 2. Renderizado Inicial de Habitaciones
+                        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+                        grid.innerHTML = '';
+
+                        if (rooms.length === 0) {
+                            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted-foreground"><i class="bi bi-search fs-1 mb-3 d-block opacity-50"></i><p>No se encontraron habitaciones.</p></div>';
+                        return;
+            }
+
+            rooms.forEach(room => {
+                const amenitiesHtml = room.amenities.slice(0, 3).map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                const extraAmenities = room.amenities.length > 3 ? `<span class="small text-muted-foreground ms-1">+${room.amenities.length - 3} más</span>` : '';
+                        const btnState = room.available === 0 ? 'disabled' : '';
+                        const btnText = room.available === 0 ? 'No Disponible' : 'Seleccionar Habitación';
+
+                        grid.innerHTML += `
+                        <div class="col-md-6 col-lg-6">
+                            <div class="room-card bg-card h-100 d-flex flex-column">
+                                <div class="position-relative" style="height: 200px;">
+                                    <img src="${room.image}" class="w-100 h-100 object-fit-cover" alt="${room.name}">
+                                        <div class="position-absolute top-0 end-0 m-2 bg-primary-custom px-3 py-1 rounded-pill small">
+                                            ${room.available} disponibles
+                                        </div>
+                                </div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${room.name}</h4>
+                                            <p class="small text-muted-foreground mb-0">${room.type}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary-custom fw-bold">$${room.price}</div>
+                                            <div class="small text-muted-foreground" style="font-size: 0.7rem;">por noche</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">${amenitiesHtml} ${extraAmenities}</div>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary-custom">${room.price} / noche</span>
+                                            <a href="/reservar/pasos?room_id=${room.id}&checkin=${checkin}&checkout=${checkout}&guests=${guests}" class="btn btn-primary-custom">Reservar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div >
+        </div >
+    </div >
+
+                    <script>
+        // 1. Estado y Datos
+                        const mockRooms = [
