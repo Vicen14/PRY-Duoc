@@ -17,13 +17,15 @@
                             <label class="form-label" style="color: #0891b2; font-weight: 500;">
                                 📅 Entrada
                             </label>
-                            <input type="date" class="form-control form-control-lg" style="border-color: #0891b2;">
+                            <input type="date" id="checkin-date" class="form-control form-control-lg"
+                                style="border-color: #0891b2;">
                         </div>
                         <div class="col-md-3 text-start">
                             <label class="form-label" style="color: #0891b2; font-weight: 500;">
                                 📅 Salida
                             </label>
-                            <input type="date" class="form-control form-control-lg" style="border-color: #0891b2;">
+                            <input type="date" id="checkout-date" class="form-control form-control-lg"
+                                style="border-color: #0891b2;">
                         </div>
                         <div class="col-md-3 text-start">
                             <label class="form-label" style="color: #0891b2; font-weight: 500;">
@@ -195,4 +197,32 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkinInput = document.getElementById('checkin-date');
+            const checkoutInput = document.getElementById('checkout-date');
+
+            // Establecer la fecha mínima de entrada para que sea hoy
+            const today = new Date().toISOString().split('T')[0];
+            checkinInput.setAttribute('min', today);
+
+            checkinInput.addEventListener('change', function () {
+                if (this.value) {
+                    // Cuando se selecciona la fecha de entrada, se establece la fecha mínima de salida
+                    const checkinDate = new Date(this.value);
+
+                    // La fecha de salida debe ser al menos un día después de la entrada
+                    checkinDate.setDate(checkinDate.getDate() + 1);
+                    const nextDay = checkinDate.toISOString().split('T')[0];
+
+                    checkoutInput.setAttribute('min', nextDay);
+
+                    // Si la fecha de salida no está configurada o es anterior a la nueva mínima, la actualizamos
+                    if (!checkoutInput.value || checkoutInput.value <= this.value) {
+                        checkoutInput.value = nextDay;
+                    }
+                }
+            });
+        });
+    </script>
 @endsection
